@@ -8,13 +8,10 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.KafkaAdmin;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Configuration
 @Profile("local")
 public class AutoCreateConfig {
-
+    // this particular configuration is used for creating the library on our own.
     @Bean
     public NewTopic libraryEvents(){
         return TopicBuilder.name("library-events")

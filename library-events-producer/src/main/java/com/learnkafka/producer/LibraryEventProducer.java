@@ -22,7 +22,8 @@ import java.util.concurrent.TimeoutException;
 @Component
 @Slf4j
 public class LibraryEventProducer {
-
+    // we have used the kafkatemplate for connecting to the kafka broker and posting the message to the topic.
+    // in our case we have used the key and value as string.
     @Autowired
     KafkaTemplate<Integer,String> kafkaTemplate;
 
@@ -33,6 +34,7 @@ public class LibraryEventProducer {
     public void sendLibraryEvent(LibraryEvent libraryEvent) throws JsonProcessingException {
 
         Integer key = libraryEvent.getLibraryEventId();
+        // object mapper is used for converting the json we are receiving to string.
         String value = objectMapper.writeValueAsString(libraryEvent);
 
         ListenableFuture<SendResult<Integer,String>> listenableFuture =  kafkaTemplate.sendDefault(key,value);
@@ -75,7 +77,8 @@ public class LibraryEventProducer {
 
     private ProducerRecord<Integer, String> buildProducerRecord(Integer key, String value, String topic) {
 
-
+        // while creating the producer records if we want some extra information as well then we can simply send those.
+        // those list of headers can be later used by consumer to put some logic which needs to be applicable in that case.
         List<Header> recordHeaders = List.of(new RecordHeader("event-source", "scanner".getBytes()));
 
         return new ProducerRecord<>(topic, null, key, value, recordHeaders);
