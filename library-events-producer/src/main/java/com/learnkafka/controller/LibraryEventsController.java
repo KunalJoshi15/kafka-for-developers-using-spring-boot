@@ -28,6 +28,8 @@ public class LibraryEventsController {
     public ResponseEntity<LibraryEvent> postLibraryEvent(@RequestBody @Valid LibraryEvent libraryEvent) throws JsonProcessingException, ExecutionException, InterruptedException {
 
         //invoke kafka producer
+        // we are specifying the event type accordingly using the eventtype the consumer will identify how it has to consume this
+        // particular message.
         libraryEvent.setLibraryEventType(LibraryEventType.NEW);
         libraryEventProducer.sendLibraryEvent_Approach2(libraryEvent);
         //libraryEventProducer.sendLibraryEvent(libraryEvent);

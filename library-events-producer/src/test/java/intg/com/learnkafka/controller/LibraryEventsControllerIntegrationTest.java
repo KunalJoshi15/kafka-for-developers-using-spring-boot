@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestPropertySource(properties = {"spring.kafka.producer.bootstrap-servers=${spring.embedded.kafka.brokers}",
         "spring.kafka.admin.properties.bootstrap.servers=${spring.embedded.kafka.brokers}"})
 public class LibraryEventsControllerIntegrationTest {
-
+    // integration test basically combines all the independent layers of application and then test those altogether.
     @Autowired
     TestRestTemplate restTemplate;
 
@@ -43,10 +43,11 @@ public class LibraryEventsControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        // we are creating the configs for the consumer to subscribe to the topics that are in embedded kafka.
         Map<String, Object> configs = new HashMap<>(KafkaTestUtils.consumerProps("group1", "true", embeddedKafkaBroker));
         configs.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         consumer = new DefaultKafkaConsumerFactory<>(configs, new IntegerDeserializer(), new StringDeserializer()).createConsumer();
-        embeddedKafkaBroker.consumeFromAllEmbeddedTopics(consumer);
+        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(consumer,"library-events");
     }
 
     @AfterEach
@@ -68,6 +69,8 @@ public class LibraryEventsControllerIntegrationTest {
                 .libraryEventId(null)
                 .book(book)
                 .build();
+        // we have created two objects one for HttpHeaders and other for the request withing the request we
+        // are creating we will be sending the headers as well.
         HttpHeaders headers = new HttpHeaders();
         headers.set("content-type", MediaType.APPLICATION_JSON.toString());
         HttpEntity<LibraryEvent> request = new HttpEntity<>(libraryEvent, headers);
@@ -77,9 +80,6 @@ public class LibraryEventsControllerIntegrationTest {
 
         //then
         assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
-
-
-
         ConsumerRecords<Integer, String> consumerRecords = KafkaTestUtils.getRecords(consumer);
         //Thread.sleep(3000);
         assert consumerRecords.count() == 1;

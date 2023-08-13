@@ -36,7 +36,9 @@ public class LibraryEventProducer {
         Integer key = libraryEvent.getLibraryEventId();
         // object mapper is used for converting the json we are receiving to string.
         String value = objectMapper.writeValueAsString(libraryEvent);
-
+        // since we are using the string value deserializer we will be sending the value as a string itself.
+        // ListenableFuture is returned by the kafkaTemplate sendDefault method. we can specify a callback to the response
+        // that we have received from kafka.
         ListenableFuture<SendResult<Integer,String>> listenableFuture =  kafkaTemplate.sendDefault(key,value);
         listenableFuture.addCallback(new ListenableFutureCallback<SendResult<Integer, String>>() {
             @Override
@@ -55,7 +57,8 @@ public class LibraryEventProducer {
 
         Integer key = libraryEvent.getLibraryEventId();
         String value = objectMapper.writeValueAsString(libraryEvent);
-
+        // this is another approach for sendint the message to kafka we can create an object of producerRecord using the key, value,
+        // topic information. We can even pass some extra information to the record headers as per our requirement.
         ProducerRecord<Integer,String> producerRecord = buildProducerRecord(key, value, topic);
 
         ListenableFuture<SendResult<Integer,String>> listenableFuture =  kafkaTemplate.send(producerRecord);
@@ -80,7 +83,9 @@ public class LibraryEventProducer {
         // while creating the producer records if we want some extra information as well then we can simply send those.
         // those list of headers can be later used by consumer to put some logic which needs to be applicable in that case.
         List<Header> recordHeaders = List.of(new RecordHeader("event-source", "scanner".getBytes()));
-
+        // while sending the producer record to the kafka topic we can send some other information as well to it.
+        // as per our requirement.
+        // there is the constructor in the producer record class to which we will be passing the partitions as null.
         return new ProducerRecord<>(topic, null, key, value, recordHeaders);
     }
 
